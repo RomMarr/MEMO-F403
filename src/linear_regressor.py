@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split, cross_val_score, cross_val_predict, KFold
 
 from pyawd import VectorAcousticWaveDataset3D
@@ -27,6 +28,8 @@ def main():
 
     # Compute absolute error
     errors = np.mean(np.abs(y_pred - y), axis=1)  # Average error per experiment
+    # Compute NMSE per experiment
+    #errors = NMSE_per_experiment(y, y_pred)
 
     best_seismometer = best_interrogator(X, y, interrogators, kf)
     print(f"Best seismometer position based on the MSE comparison: {best_seismometer}")
@@ -85,8 +88,8 @@ def best_interrogator(X, y, interrogators, kf):
     reg1 = LinearRegression()
     reg2 = LinearRegression()
 
-    mse1 = -np.mean(cross_val_score(reg1, X1, y, cv=kf, scoring="neg_mean_squared_error"))
-    mse2 = -np.mean(cross_val_score(reg2, X2, y, cv=kf, scoring="neg_mean_squared_error"))
+    mse1 = -np.mean(cross_val_score(reg1, X1, y, cv=kf, scoring="norm_mean_squared_error"))
+    mse2 = -np.mean(cross_val_score(reg2, X2, y, cv=kf, scoring="norm_mean_squared_error"))
         
     print("MSE 1 :", mse1)
     print("MSE 2 :", mse2)
@@ -158,6 +161,22 @@ def plot_abs_error_analysis_by_fold(errors, colors, folds):
     plt.title("Prediction error per experiment (colored by fold)")
     plt.legend()
     plt.show()
+
+
+# Compute Normalized MSE
+def NMSE(y, y_pred):
+    """ Compute the normalized mean squared error """
+    mse = mean_squared_error(y, y_pred)
+    variance = np.var(y)
+    nmse = mse / variance
+    return nmse
+
+def NMSE_per_experiment(y, y_pred):
+    """ Compute the normalized mean squared error per experiment """
+    mse = np.mean((y - y_pred) ** 2, axis=1)  # Compute MSE per experiment
+    variance = np.var(y, axis=1)  # Compute variance per experiment
+    nmse = mse / variance  # Normalize
+    return nmse
 
 if __name__ == "__main__":
     main()
