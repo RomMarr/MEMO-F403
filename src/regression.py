@@ -98,7 +98,6 @@ def cross_validate_nn(X, y, kf, n_epochs=500):
 
 def plot(X,y, y_pred, errors, models_names):
     # corrected way to plot scatter graph :
-
     y_x, y_y, y_z = y[:,0], y[:,1], y[:,2]
     y_pred_x, y_pred_y, y_pred_z = y_pred[:,0], y_pred[:,1], y_pred[:,2]
     plot_linear_reg(y_x, y_pred_x, " (x-coordonates)")
